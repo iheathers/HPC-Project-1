@@ -67,6 +67,10 @@ int main()
     }
     clock_t endTime = clock();
 
+    // TODO 1: RAS - CALCULATE BARYCENTRE FUNCITON AT EACH SNAPSHOT
+
+    // TODO 2: PRITAM - WRITE A FUCNTION TO CALCULATE WEIGHT OF FISH AT EACH SNAPSHOT
+
     // Calculate and print elapsed time
     double elapsedTime = (double)(endTime - startTime) / CLOCKS_PER_SEC;
     printf("Elapsed time: %.4f seconds\n", elapsedTime);
