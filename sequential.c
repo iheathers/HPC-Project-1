@@ -1,4 +1,4 @@
-// AUTHOR: PRITAM
+// AUTHOR: PRITAM STUDENT NUMBER: 23771397
 // RASPREET
 
 #include <math.h>
@@ -18,8 +18,13 @@
 #define NUM_FISHES 10
 #define NUM_SIMULATION_STEPS 10 // Number of simulation steps
 
+#define MAX_FISH_WEIGHT 2.0 // Maximum weight of a fish
+#define MIN_FISH_WEIGHT 1.0 // Minimum weight of a fish
+
 // FIXME: FISHES WEIGHT ARE COMING NEGATIVE. TIME TO DEBUG
 // WRITE THE FUNCTION SIGNATURE ABOVE AND IMPLEMENT IT BELOW
+
+void calculateBarycenter(Fish fishes[], int numFishes);
 
 double square(double num) { return num * num; }
 
@@ -77,13 +82,13 @@ void updateWeight(Fish *fish, double maxDistanceTraveledInFishSchool) {
       fish->distanceTraveled / maxDistanceTraveledInFishSchool;
 
   // CAP IT AT 0 OR 1?
-  if (fish->weight + weightChange < 1.0) {
-    fish->weight = 1.0; // Cap the weight at 1.0
+  if (fish->weight + weightChange < MIN_FISH_WEIGHT) {
+    fish->weight = MIN_FISH_WEIGHT; // Cap the weight at 1.0
     return;
   }
 
-  if (fish->weight + weightChange > 2.0) {
-    fish->weight = 2.0; // Cap the weight at 2.0
+  if (fish->weight + weightChange > MAX_FISH_WEIGHT) {
+    fish->weight = MAX_FISH_WEIGHT; // Cap the weight at 2.0
     return;
   }
 
@@ -135,7 +140,15 @@ void calculateBarycenter(Fish fishes[], int numFishes) {
     return;
   }
 
+  // MAYBE CALCULATE THE COORDINATE JUST FOR EXPERIMENT
+
+  // YOU CAN ALSO PRINT MEMORY ADDRESS TO SEE IF IT'S CONTINUOUS/ ADD THAT IN
+  // REPORT
+
+  // &FISH[I]
+
   double barycenter = weightSum / distanceSum;
+
   printf("Barycenter: %.2f\n", barycenter);
 }
 
@@ -149,7 +162,7 @@ int main() {
   srand(time(NULL));
 
   // Initialize fish. NOTE; WE HAVE TO USE HEAP INSTEAD OF STACK AS IN
-  // INSTRCUTIONS SO HAVE TO CHANGE THIS A BIT Fish fishes[NUM_FISHES];
+  // INSTRUCTIONS SO HAVE TO CHANGE THIS A BIT Fish fishes[NUM_FISHES];
 
   Fish *fishes; // Declare a pointer to the structure Fish
 
