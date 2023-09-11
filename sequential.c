@@ -1,5 +1,6 @@
-// AUTHOR: PRITAM STUDENT NUMBER: 23771397
-// RASPREET
+// AUTHORS:
+// PRITAM SUWAL SHRESTHA (23771397)
+// RASPREET KHANUJA (23308425)
 
 #include <math.h>
 #include <stdbool.h>
@@ -15,33 +16,33 @@
 #define MIN_SWIM_DISTANCE -0.1 // Minimum distance a fish can swim in one step
 #define MAX_SWIM_DISTANCE 0.1  // Maximum distance a fish can swim in one step
 
+#define MAX_FISH_WEIGHT 2.0 // Maximum weight of a fish
+#define MIN_FISH_WEIGHT 0.0 // Minimum weight of a fish
+
+// TODO: CHANGE THE NUMBER OF FISHES AND SIMULATION STEPS FOR EXPERIMENT
 #define NUM_FISHES 10
 #define NUM_SIMULATION_STEPS 10 // Number of simulation steps
 
-#define MAX_FISH_WEIGHT 2.0 // Maximum weight of a fish
-#define MIN_FISH_WEIGHT 1.0 // Minimum weight of a fish
-
 // FIXME: FISHES WEIGHT ARE COMING NEGATIVE. TIME TO DEBUG
-// WRITE THE FUNCTION SIGNATURE ABOVE AND IMPLEMENT IT BELOW
-
-void calculateBarycenter(Fish fishes[], int numFishes);
+// TODO: WRITE THE FUNCTION SIGNATURE ABOVE AND IMPLEMENT IT BELOW
 
 double square(double num) { return num * num; }
 
 // Define fish structure and use it as alias
 typedef struct {
-  double x, y; // Coordinates of a fish
-  double distanceTraveled;
-  double weight; // Weight of a fish
+  double x, y;             // Coordinates of a fish
+  double distanceTraveled; // Distance traveled by a fish in one step
+  double weight;           // Weight of a fish
 } Fish;
 
+// BOUNDARY CONDITION OF LAKE
 bool isFishOutsideLake(Fish *fish) {
   return (fish->x < LAKE_X_MIN || fish->x > LAKE_X_MAX ||
           fish->y < LAKE_Y_MIN || fish->y > LAKE_Y_MAX);
 }
 
 double getRandomNumberInRange(double minValue, double maxValue) {
-  // Generate a random double between 0 and 1
+  // Generate a random double between minValue and maxValue
   double randomDouble = ((double)rand() / RAND_MAX);
 
   // Scale and shift the random double to the specified range
@@ -81,14 +82,13 @@ void updateWeight(Fish *fish, double maxDistanceTraveledInFishSchool) {
   double weightChange =
       fish->distanceTraveled / maxDistanceTraveledInFishSchool;
 
-  // CAP IT AT 0 OR 1?
   if (fish->weight + weightChange < MIN_FISH_WEIGHT) {
-    fish->weight = MIN_FISH_WEIGHT; // Cap the weight at 1.0
+    fish->weight = MIN_FISH_WEIGHT;
     return;
   }
 
   if (fish->weight + weightChange > MAX_FISH_WEIGHT) {
-    fish->weight = MAX_FISH_WEIGHT; // Cap the weight at 2.0
+    fish->weight = MAX_FISH_WEIGHT;
     return;
   }
 
@@ -96,41 +96,77 @@ void updateWeight(Fish *fish, double maxDistanceTraveledInFishSchool) {
 }
 
 // Function to perform one simulation step
-void simulationStep(Fish fishes[], int numFishes) {
+// ARE THEY CREATE IN STACK OR HEAP?
+// Fish *fishes
+// Fish fishes[]
+
+//  simulationStep(fishes, NUM_FISHES);
+void simulationStep(Fish *fishes, int numFishes) {
+
+  // fishes->x=1;
+  // fishes->y=1;
+  // (fishes+1)->x=2;
+  // (fishes+1)->y=2;
 
   double maxDistanceTraveledInFishSchool = 0.0;
 
   for (int i = 0; i < numFishes; i++) {
-    double prevDistance = calculateDistanceFromOrigin(fishes[i].x, fishes[i].y);
+    double prevDistance =
+        calculateDistanceFromOrigin((fishes + i)->x, (fishes + i)->y);
 
-    swim(&fishes[i]);
+    // THIS AGAIN IS CONFUSION. STACK OR HEAP
+    swim(fishes + i);
 
-    double nextDistance = calculateDistanceFromOrigin(fishes[i].x, fishes[i].y);
+    double nextDistance =
+        calculateDistanceFromOrigin((fishes + i)->x, (fishes + i)->y);
 
-    fishes[i].distanceTraveled = nextDistance - prevDistance;
+    (fishes + i)->distanceTraveled = nextDistance - prevDistance;
 
-    if (fishes[i].distanceTraveled > maxDistanceTraveledInFishSchool) {
-      maxDistanceTraveledInFishSchool = fishes[i].distanceTraveled;
+    if ((fishes + i)->distanceTraveled > maxDistanceTraveledInFishSchool) {
+      maxDistanceTraveledInFishSchool = (fishes + i)->distanceTraveled;
     }
 
-    printf("Fish %d: x = %.2f, y = %.2f, weight = %.2f\n", i, fishes[i].x,
-           fishes[i].y, fishes[i].weight);
+    printf("Fish %d: x = %.2f, y = %.2f, weight = %.2f\n", i, (fishes + i)->x,
+           (fishes + i)->y, (fishes + i)->weight);
   }
+
+  // for (int i = 0; i < numFishes; i++) {
+  //   double prevDistance =
+  //       calculateDistanceFromOrigin((fishes + i)->x, (fishes + i)->y);
+
+  //   swim(fishes + i); // Pass a pointer to the current fish
+
+  //   double nextDistance =
+  //       calculateDistanceFromOrigin((fishes + i)->x, (fishes + i)->y);
+
+  //   (fishes + i)->distanceTraveled =
+  //       nextDistance -
+  //       prevDistance; // Update distanceTraveled for the current fish
+
+  //   if ((fishes + i)->distanceTraveled > maxDistanceTraveledInFishSchool) {
+  //     maxDistanceTraveledInFishSchool = (fishes + i)->distanceTraveled;
+  //   }
+
+  //   printf("Fish %d: x = %.2f, y = %.2f, weight = %.2f\n", i, (fishes +
+  //   i)->x,
+  //          (fishes + i)->y, (fishes + i)->weight);
+  // }
 
   for (int i = 0; i < numFishes; i++) {
 
-    updateWeight(&fishes[i], maxDistanceTraveledInFishSchool);
+    updateWeight((fishes + i), maxDistanceTraveledInFishSchool);
   }
 }
 
-void calculateBarycenter(Fish fishes[], int numFishes) {
+void calculateBarycenter(Fish *fishes, int numFishes) {
   double weightSum = 0.0;
   double distanceSum = 0.0;
 
   for (int i = 0; i < numFishes; i++) {
-    weightSum += fishes[i].weight *
-                 calculateDistanceFromOrigin(fishes[i].x, fishes[i].y);
-    distanceSum += calculateDistanceFromOrigin(fishes[i].x, fishes[i].y);
+    weightSum += (fishes + i)->weight *
+                 calculateDistanceFromOrigin((fishes + i)->x, (fishes + i)->y);
+    distanceSum +=
+        calculateDistanceFromOrigin((fishes + i)->x, (fishes + i)->y);
   }
 
   // Check if distanceSum is non-zero to prevent division by zero
@@ -166,8 +202,15 @@ int main() {
 
   Fish *fishes; // Declare a pointer to the structure Fish
 
+  // Print("")
+
   // Allocate memory for 1,000,000 fish structures
   fishes = (Fish *)malloc(NUM_FISHES * sizeof(Fish));
+
+  // printf("fishes %d", fishes);
+  printf("fishes %p\n", fishes);
+
+  printf("*fishes %p\n", *fishes);
 
   if (fishes == NULL) {
     fprintf(stderr, "Memory allocation failed. Exiting...\n");
