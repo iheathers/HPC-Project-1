@@ -3,6 +3,7 @@
 // RASPREET KHANUJA (23308425)
 
 #include <math.h>
+#include <omp.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -95,18 +96,7 @@ void updateWeight(Fish *fish, double maxDistanceTraveledInFishSchool) {
   fish->weight += weightChange;
 }
 
-// Function to perform one simulation step
-// ARE THEY CREATE IN STACK OR HEAP?
-// Fish *fishes
-// Fish fishes[]
-
-//  simulationStep(fishes, NUM_FISHES);
 void simulationStep(Fish *fishes, int numFishes) {
-
-  // fishes->x=1;
-  // fishes->y=1;
-  // (fishes+1)->x=2;
-  // (fishes+1)->y=2;
 
   double maxDistanceTraveledInFishSchool = 0.0;
 
@@ -114,7 +104,6 @@ void simulationStep(Fish *fishes, int numFishes) {
     double prevDistance =
         calculateDistanceFromOrigin((fishes + i)->x, (fishes + i)->y);
 
-    // THIS AGAIN IS CONFUSION. STACK OR HEAP
     swim(fishes + i);
 
     double nextDistance =
@@ -130,30 +119,7 @@ void simulationStep(Fish *fishes, int numFishes) {
            (fishes + i)->y, (fishes + i)->weight);
   }
 
-  // for (int i = 0; i < numFishes; i++) {
-  //   double prevDistance =
-  //       calculateDistanceFromOrigin((fishes + i)->x, (fishes + i)->y);
-
-  //   swim(fishes + i); // Pass a pointer to the current fish
-
-  //   double nextDistance =
-  //       calculateDistanceFromOrigin((fishes + i)->x, (fishes + i)->y);
-
-  //   (fishes + i)->distanceTraveled =
-  //       nextDistance -
-  //       prevDistance; // Update distanceTraveled for the current fish
-
-  //   if ((fishes + i)->distanceTraveled > maxDistanceTraveledInFishSchool) {
-  //     maxDistanceTraveledInFishSchool = (fishes + i)->distanceTraveled;
-  //   }
-
-  //   printf("Fish %d: x = %.2f, y = %.2f, weight = %.2f\n", i, (fishes +
-  //   i)->x,
-  //          (fishes + i)->y, (fishes + i)->weight);
-  // }
-
   for (int i = 0; i < numFishes; i++) {
-
     updateWeight((fishes + i), maxDistanceTraveledInFishSchool);
   }
 }
@@ -176,13 +142,6 @@ void calculateBarycenter(Fish *fishes, int numFishes) {
     return;
   }
 
-  // MAYBE CALCULATE THE COORDINATE JUST FOR EXPERIMENT
-
-  // YOU CAN ALSO PRINT MEMORY ADDRESS TO SEE IF IT'S CONTINUOUS/ ADD THAT IN
-  // REPORT
-
-  // &FISH[I]
-
   double barycenter = weightSum / distanceSum;
 
   printf("Barycenter: %.2f\n", barycenter);
@@ -202,15 +161,7 @@ int main() {
 
   Fish *fishes; // Declare a pointer to the structure Fish
 
-  // Print("")
-
-  // Allocate memory for 1,000,000 fish structures
   fishes = (Fish *)malloc(NUM_FISHES * sizeof(Fish));
-
-  // printf("fishes %d", fishes);
-  printf("fishes %p\n", fishes);
-
-  printf("*fishes %p\n", *fishes);
 
   if (fishes == NULL) {
     fprintf(stderr, "Memory allocation failed. Exiting...\n");
@@ -224,34 +175,32 @@ int main() {
     // THIS RANGE CAN BE SPECIFIED IN DEFINE AS A VARIABLE/
     // MAKE SURE IT IS RIGHT OR NOT AS THE WAY OF ACCESSING THE VARIABLE MIGHT
     // BE DIFFERENT
-    fishes[i].x = getRandomCoordinateInRange(-100, 100);
-    fishes[i].y = getRandomCoordinateInRange(-100, 100);
-    fishes[i].distanceTraveled = 0.0;
-    fishes[i].weight = 1.0; // You can set the initial weight here 'w'
+    (fishes + i)->x = getRandomCoordinateInRange(-100, 100);
+    (fishes + i)->y = getRandomCoordinateInRange(-100, 100);
+    (fishes + i)->distanceTraveled = 0.0;
+    (fishes + i)->weight = 1.0; // You can set the initial weight here 'w'
 
-    // MAKE SURE WHICH PROCESS IS RIGHT
-    // fishes->x=1;
-    // fishes->y=1;
-    // (fishes+1)->x=2;
-    // (fishes+1)->y=2;
-
-    printf("Fish %d: x = %.2f, y = %.2f, weight = %.2f\n", i, fishes[i].x,
-           fishes[i].y, fishes[i].weight);
+    printf("Fish %d: x = %.2f, y = %.2f, weight = %.2f\n", i, (fishes + i)->x,
+           (fishes + i)->y, (fishes + i)->weight);
   }
 
   // Run the simulation
-  clock_t startTime = clock();
+  // clock_t startTime = clock();
+
+  double startTime = omp_get_wtime();
+
   for (int step = 0; step < NUM_SIMULATION_STEPS; step++) {
-
     simulationStep(fishes, NUM_FISHES);
-
     calculateBarycenter(fishes, NUM_FISHES);
   }
-  clock_t endTime = clock();
+
+  // clock_t endTime = clock();
+  double endTime = omp_get_wtime();
 
   // Calculate and print elapsed time
-  double elapsedTime = (double)(endTime - startTime) / CLOCKS_PER_SEC;
-  printf("Elapsed time: %.4f seconds\n", elapsedTime);
+  // double elapsedTime = (double)(endTime - startTime) / CLOCKS_PER_SEC;
+  double time_taken = endTime - startTime;
+  printf("Elapsed time: %.4f seconds\n", time_taken);
 
   // Don't forget to free the allocated memory when done
   free(fishes);
